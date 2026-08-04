@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manhwa Translator AI — Read Manhwa, Manga & Webtoons in Hinglish</title>
+<meta name="description" content="Manhwa Translator AI is a Chrome extension that reads any panel on your screen and translates it instantly into Hindi, English, or Hinglish — powered by Gemini AI OCR. Free to install, 14-day Premium trial.">
+<meta name="theme-color" content="#08080c">
+<link rel="canonical" href="https://manhwatranslator.ai/">
+
+<!-- Open Graph / Twitter -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Manhwa Translator AI — Read Manhwa, Manga & Webtoons in Hinglish">
+<meta property="og:description" content="Instant OCR + AI translation for manhwa, manga and webtoons. Hindi, English, or Hinglish — right over the panel, in real time.">
+<meta property="og:image" content="/assets/images/og-image.png">
+<meta property="og:url" content="https://manhwatranslator.ai/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Manhwa Translator AI">
+<meta name="twitter:description" content="Instant OCR + AI translation for manhwa, manga and webtoons — in Hindi, English, or Hinglish.">
+<meta name="twitter:image" content="/assets/images/og-image.png">
+
+<!-- Favicons -->
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,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">
+<link rel="icon" type="image/png" sizes="192x192" href="data:image/png;base64,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">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="style.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Manhwa Translator AI",
+  "applicationCategory": "BrowserApplication",
+  "operatingSystem": "Chrome, Edge, Brave, Opera",
+  "description": "Chrome extension that captures manhwa, manga and webtoon panels and translates them instantly into Hindi, English, or Hinglish using AI-powered OCR.",
+  "offers": [
+    { "@type": "Offer", "price": "0", "priceCurrency": "INR", "name": "Free" },
+    { "@type": "Offer", "price": "99", "priceCurrency": "INR", "name": "Premium Monthly" },
+    { "@type": "Offer", "price": "799", "priceCurrency": "INR", "name": "Premium Yearly" }
+  ]
+}
+</script>
+</head>
+<body>
+
+<a href="#main" class="skip-link">Skip to content</a>
+
+<header class="nav" id="siteNav">
+  <div class="container">
+    <a href="/" class="brand">
+      <span class="brand-logo" aria-hidden="true"></span>
+      Manhwa Translator <span class="text-grad">AI</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#screenshots">Screenshots</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="#pricing" class="btn btn-secondary">Upgrade to Premium</a>
+      <a href="#install" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 3"/></svg>
+        Add to Chrome
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobilePanel"><span></span></button>
+    </div>
+  </div>
+  <div class="mobile-panel" id="mobilePanel">
+    <a href="#features">Features</a>
+    <a href="#screenshots">Screenshots</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a href="contact.html">Contact</a>
+    <div class="nav-cta">
+      <a href="#install" class="btn btn-primary btn-block">Add to Chrome — it's free</a>
+      <a href="#pricing" class="btn btn-secondary btn-block">Upgrade to Premium</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="install">
+    <div class="blob-field"><div class="blob blob--a"></div><div class="blob blob--b"></div></div>
+    <div class="container">
+      <div class="hero-copy">
+        <span class="eyebrow"><span class="dot"></span>Chrome Extension · Gemini-Powered OCR</span>
+        <h1>Read raw manhwa like it was always written in <span class="text-grad">Hinglish.</span></h1>
+        <p>Manhwa Translator AI reads any panel on your screen and translates it in real time — then drops the translation right back where the original text was. No tab-switching, no screenshotting into Google Translate, no losing your place.</p>
+        <div class="hero-actions">
+          <a href="#" class="btn btn-primary btn-lg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 3"/></svg>
+            Add to Chrome — it's free
+          </a>
+          <a href="#pricing" class="btn btn-secondary btn-lg">See Premium plans</a>
+        </div>
+        <div class="hero-badges">
+          <span class="hero-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>14-Day Free Trial</span>
+          <span class="hero-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>No Credit Card Required</span>
+          <span class="hero-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Cancel Anytime</span>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="scan-device reveal">
+          <div class="scan-device-inner">
+            <div class="scan-device-bar">
+              <div class="scan-device-dots"><span></span><span></span><span></span></div>
+              <span class="scan-device-label">manhwa-translator.ext</span>
+            </div>
+            <div class="scan-panel" id="scanPanel">
+              <div class="panel-figure" aria-hidden="true">
+                <svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMax slice">
+                  <defs>
+                    <linearGradient id="figGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stop-color="#2c2a3a"/>
+                      <stop offset="1" stop-color="#17161f"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="400" height="500" fill="url(#figGrad)" opacity="0.5"/>
+                  <circle cx="120" cy="150" r="150" fill="#7c5cff" opacity="0.08"/>
+                  <circle cx="320" cy="420" r="120" fill="#ff8fe3" opacity="0.06"/>
+                  <path d="M60 500 C60 340 150 260 210 260 C270 260 340 320 340 460 L340 500 Z" fill="#1c1b26" opacity="0.7"/>
+                  <circle cx="220" cy="200" r="62" fill="#211f2c"/>
+                  <path d="M0 60 H400 M0 130 H160 M0 400 H400" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+                </svg>
+              </div>
+              <div class="scan-status"><span class="pulse"></span><span id="scanStatusLabel">Scanning…</span></div>
+              <div class="scan-beam" aria-hidden="true"></div>
+
+              <div class="speech-bubble reveal">
+                <div class="text-swap">
+                  <span class="src-text">지금 도망칠 순 없어…</span>
+                  <span class="tr-text"><span class="badge-translated">Translated</span><br>Ab bhaagna possible nahi hai…</span>
+                </div>
+              </div>
+              <div class="speech-bubble b2 reveal">
+                <div class="text-swap">
+                  <span class="src-text">力を見せてやる。</span>
+                  <span class="tr-text"><span class="badge-translated">Translated</span><br>Apni asli takat dikhaata hoon.</span>
+                </div>
+              </div>
+            </div>
+            <div class="scan-footer">
+              <div class="mode-pills">
+                <span class="mode-pill" id="pillHi">Hindi</span>
+                <span class="mode-pill is-active" id="pillHinglish">Hinglish</span>
+                <span class="mode-pill" id="pillEn">English</span>
+              </div>
+              <span class="scan-device-label">0.8s</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TRUST STRIP ============ -->
+  <section class="trust-strip reveal" aria-label="Trust indicators">
+    <div class="container trust-strip-inner">
+      <span class="hero-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Chrome Extension</span>
+      <span class="hero-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Google Login</span>
+      <span class="hero-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Razorpay Secure</span>
+      <span class="hero-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Works on Every Website</span>
+    </div>
+  </section>
+
+  <!-- ============ HOW IT WORKS ============ -->
+  <section class="section" id="how">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="eyebrow">The Flow</span>
+        <h2>Three steps. Under a second.</h2>
+        <p>No copy-pasting into another tab, no re-typing panel text into a translator. It happens exactly where you're already reading.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step-num">01 — Capture</span>
+          <h3>Select the panel</h3>
+          <p>Drag a box around any text — on a manhwa site, a manga reader, or a downloaded chapter. Works on anything visible in your browser.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step-num">02 — Translate</span>
+          <h3>AI reads &amp; translates</h3>
+          <p>Gemini-powered OCR extracts the text, detects the source language automatically, and translates it in under a second.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step-num">03 — Read</span>
+          <h3>Read it your way</h3>
+          <p>Choose Hindi, English, or Hinglish. The translation appears in a floating overlay, right where the original text was.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FEATURES ============ -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Features</span>
+        <h2>Built for the way you actually read.</h2>
+        <p>Every feature exists to keep you in the chapter — not switching tabs to figure out what a character just said.</p>
+      </div>
+      <div class="feature-grid">
+
+        <div class="feature-card reveal">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8V5a1 1 0 0 1 1-1h3M20 8V5a1 1 0 0 0-1-1h-3M4 16v3a1 1 0 0 0 1 1h3M20 16v3a1 1 0 0 1-1 1h-3"/><rect x="8" y="9" width="8" height="6" rx="1"/></svg></div>
+          <h3>Instant OCR</h3>
+          <p>Screen-capture OCR reads text off any panel in under a second — regardless of font, art style, or speech-bubble shape.</p>
+        </div>
+
+        <div class="feature-card reveal">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 3 1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3Z"/><path d="M19 15.5 19.8 17.7 22 18.5 19.8 19.3 19 21.5 18.2 19.3 16 18.5 18.2 17.7 19 15.5Z"/></svg></div>
+          <h3>AI Translation</h3>
+          <p>Built on Google's Gemini models, tuned for the tone and slang of manhwa, manga, and webtoons — not stiff textbook translation.</p>
+        </div>
+
+        <div class="feature-card is-premium reveal">
+          <span class="feature-tag">Premium</span>
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.55L3 20l1.06-5.4A8.5 8.5 0 1 1 21 11.5Z"/></svg></div>
+          <h3>Hinglish Mode</h3>
+          <p>Read the way you actually talk. Hinglish mode blends Hindi and English so dialogue keeps its punch and timing.</p>
+        </div>
+
+        <div class="feature-card reveal">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h10M4 18h7"/></svg></div>
+          <h3>Hindi &amp; English Modes</h3>
+          <p>Prefer pure Hindi or pure English instead? Switch modes any time — even mid-chapter, without losing your scroll position.</p>
+        </div>
+
+        <div class="feature-card reveal">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.6"/><path d="M12 4v2M12 18v2M4 12h2M18 12h2"/></svg></div>
+          <h3>Auto Detection</h3>
+          <p>The extension recognizes the source language automatically — Korean, Japanese, or Chinese — with no manual setup per site.</p>
+        </div>
+
+        <div class="feature-card reveal">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div>
+          <h3>Floating Translation UI</h3>
+          <p>Translations appear in a lightweight overlay that follows the panel, so the artwork never gets covered or blocked.</p>
+        </div>
+
+        <div class="feature-card is-premium reveal">
+          <span class="feature-tag">Premium</span>
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0-4-4m4 4 4-4"/><path d="M4 17v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1"/></svg></div>
+          <h3>Offline Cache</h3>
+          <p>Already-translated panels are cached locally, so re-reading a chapter doesn't cost another API call — or your data.</p>
+        </div>
+
+        <div class="feature-card reveal">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/></svg></div>
+          <h3>Google Login</h3>
+          <p>Sign in with your Google account in one tap. No new password to create or remember, no separate account to manage.</p>
+        </div>
+
+        <div class="feature-card reveal">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
+          <h3>14-Day Free Trial</h3>
+          <p>Try every Premium feature free for two weeks — Hinglish mode, offline cache, priority speed — before you decide.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ COMPARISON ============ -->
+  <section class="section" id="compare" style="padding-top:0">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="eyebrow">Compare</span>
+        <h2>Why not just use Google Translate?</h2>
+        <p>Google Translate's camera mode works for a single photo. Here's how it stacks up against reading a full chapter.</p>
+      </div>
+      <div class="compare-wrap reveal">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Google Translate</th>
+              <th class="is-us">Manhwa Translator AI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Overlay Translation</td>
+              <td><span class="x-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg></span></td>
+              <td class="is-us"><span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+            </tr>
+            <tr>
+              <td>OCR</td>
+              <td><span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+              <td class="is-us"><span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+            </tr>
+            <tr>
+              <td>Hinglish</td>
+              <td><span class="x-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg></span></td>
+              <td class="is-us"><span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+            </tr>
+            <tr>
+              <td>One Click</td>
+              <td><span class="x-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg></span></td>
+              <td class="is-us"><span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+            </tr>
+            <tr>
+              <td>Works Everywhere</td>
+              <td><span class="x-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg></span></td>
+              <td class="is-us"><span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+            </tr>
+            <tr>
+              <td>Auto Language Detection</td>
+              <td><span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+              <td class="is-us"><span class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREENSHOTS ============ -->
+  <section class="section" id="screenshots">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="eyebrow">Inside the Extension</span>
+        <h2>A closer look at the interface.</h2>
+        <p>Five screens, one goal: get you from "what did they just say?" to reading again, as fast as possible.</p>
+      </div>
+
+      <div class="shots-tabs reveal" role="tablist" aria-label="Extension screens">
+        <button class="shots-tab is-active" data-target="shot-popup" role="tab" aria-selected="true">Popup</button>
+        <button class="shots-tab" data-target="shot-overlay" role="tab" aria-selected="false">Overlay</button>
+        <button class="shots-tab" data-target="shot-window" role="tab" aria-selected="false">Translation Window</button>
+        <button class="shots-tab" data-target="shot-premium" role="tab" aria-selected="false">Premium Screen</button>
+        <button class="shots-tab" data-target="shot-settings" role="tab" aria-selected="false">Settings</button>
+      </div>
+
+      <div class="shots-stage reveal">
+
+        <div class="shot-panel is-active" id="shot-popup">
+          <div class="mock-window mock-popup">
+            <div class="mock-titlebar"><span></span><span></span><span></span><span class="title">Extension popup</span></div>
+            <div class="mock-body">
+              <div class="mock-row"><h3 style="font-size:0.95rem">Translation mode</h3></div>
+              <div class="mock-lang-switch"><span>English</span><span>Hindi</span><span class="on">Hinglish</span></div>
+              <div class="mock-row"><span style="font-size:13px;color:var(--text-2)">Floating overlay</span><div class="mock-toggle"></div></div>
+              <div class="mock-row"><span style="font-size:13px;color:var(--text-2)">Offline cache</span><div class="mock-toggle"></div></div>
+              <div class="mock-btn-capture">Capture panel</div>
+            </div>
+          </div>
+          <p class="shot-caption"><strong>Popup —</strong> switch translation mode and jump into capture, without opening a settings tab.</p>
+        </div>
+
+        <div class="shot-panel" id="shot-overlay">
+          <div class="mock-window">
+            <div class="mock-titlebar"><span></span><span></span><span></span><span class="title">Reading — overlay active</span></div>
+            <div class="mock-body">
+              <div class="mock-overlay-stage">
+                <svg class="fake-art" viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice"><rect width="400" height="250" fill="#15141c"/><circle cx="90" cy="70" r="70" fill="#7c5cff" opacity="0.1"/><circle cx="320" cy="190" r="90" fill="#ff8fe3" opacity="0.08"/><path d="M0 210 C120 150 260 240 400 190 L400 250 L0 250 Z" fill="#1d1c27"/></svg>
+                <div class="mock-select-box"></div>
+                <div class="mock-float-card"><span class="badge-translated">Translated</span><p>Wait… tumne yeh kab seekha?</p></div>
+              </div>
+            </div>
+          </div>
+          <p class="shot-caption"><strong>Overlay —</strong> select any region and the translation floats beside it, without covering the art.</p>
+        </div>
+
+        <div class="shot-panel" id="shot-window">
+          <div class="mock-window">
+            <div class="mock-titlebar"><span></span><span></span><span></span><span class="title">Translation window — side by side</span></div>
+            <div class="mock-body" style="padding:0">
+              <div class="mock-split">
+                <div class="original">
+                  <span class="col-label">ORIGINAL</span>
+                  <div class="mock-fake-line w-70"></div>
+                  <div class="mock-fake-line w-90"></div>
+                  <div class="mock-fake-line w-50"></div>
+                </div>
+                <div class="translated">
+                  <span class="col-label">HINGLISH</span>
+                  <div class="mock-fake-line w-80"></div>
+                  <div class="mock-fake-line w-90"></div>
+                  <div class="mock-fake-line w-70"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="shot-caption"><strong>Translation window —</strong> a full side-by-side view for panels with dense dialogue or footnotes.</p>
+        </div>
+
+        <div class="shot-panel" id="shot-premium">
+          <div class="mock-window mock-premium">
+            <div class="mock-titlebar"><span></span><span></span><span></span><span class="title">Upgrade to Premium</span></div>
+            <div class="mock-body">
+              <div class="mock-crown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 8 4 3 5-6 5 6 4-3-2 11H5L3 8Z"/></svg></div>
+              <h3>Manhwa Translator Premium</h3>
+              <p style="color:var(--text-2);font-size:13px;margin-top:6px">₹99/month or ₹799/year</p>
+              <ul>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Hinglish translation mode</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Unlimited daily translations</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Offline cache &amp; priority speed</li>
+              </ul>
+              <div class="mock-btn-capture">Start 14-day free trial</div>
+            </div>
+          </div>
+          <p class="shot-caption"><strong>Premium screen —</strong> everything unlocked, billed monthly or yearly over UPI.</p>
+        </div>
+
+        <div class="shot-panel" id="shot-settings">
+          <div class="mock-window mock-settings">
+            <div class="mock-titlebar"><span></span><span></span><span></span><span class="title">Settings</span></div>
+            <div class="mock-body">
+              <div class="mock-setting-row"><div><div class="label">Default language</div><div class="desc">Used for new tabs and sites</div></div><span class="mock-select">Hinglish</span></div>
+              <div class="mock-setting-row"><div><div class="label">Source language</div><div class="desc">Auto-detect or lock to one</div></div><span class="mock-select">Auto</span></div>
+              <div class="mock-setting-row"><div><div class="label">Overlay position</div><div class="desc">Where translations appear</div></div><span class="mock-select">Follow panel</span></div>
+              <div class="mock-setting-row"><div><div class="label">Account</div><div class="desc">Signed in with Google</div></div><span class="mock-select">Manage</span></div>
+            </div>
+          </div>
+          <p class="shot-caption"><strong>Settings —</strong> set your defaults once; the extension remembers them per device.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ REVIEWS ============ -->
+  <section class="section" id="reviews" style="padding-bottom:0">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="eyebrow">Reviews</span>
+        <h2>What readers are saying.</h2>
+      </div>
+      <div class="reviews-grid">
+        <div class="review-card reveal">
+          <div class="review-stars" aria-label="5 out of 5 stars">★★★★★</div>
+          <p class="review-quote">"Best way to read Korean manhwa."</p>
+          <div class="review-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Verified User</div>
+        </div>
+        <div class="review-card reveal">
+          <div class="review-stars" aria-label="5 out of 5 stars">★★★★★</div>
+          <p class="review-quote">"Hinglish mode feels natural."</p>
+          <div class="review-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Verified User</div>
+        </div>
+        <div class="review-card reveal">
+          <div class="review-stars" aria-label="5 out of 5 stars">★★★★★</div>
+          <p class="review-quote">"No more switching to Google Translate."</p>
+          <div class="review-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Verified User</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PRICING ============ -->
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="eyebrow">Pricing</span>
+        <h2>Start free. Upgrade when Hinglish mode hooks you.</h2>
+        <p>Every Premium plan starts with a 14-day free trial. Cancel any time before it ends and you won't be charged.</p>
+      </div>
+
+      <div class="pricing-grid">
+        <div class="price-card reveal">
+          <h3>Free</h3>
+          <div class="price-amount"><span class="num">₹0</span><span class="per">/ forever</span></div>
+          <p class="price-subtitle">14-Day Premium Trial Included</p>
+          <p class="desc">Try every Premium feature free for 14 days.</p>
+          <ul class="price-features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>OCR</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Hindi Translation</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>English Translation</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Google Login</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Auto Language Detection</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Floating Overlay</li>
+          </ul>
+          <a href="#" class="btn btn-secondary btn-block">Start Free Trial</a>
+        </div>
+
+        <div class="price-card is-popular reveal">
+          <span class="price-card-badge is-subtle">Most Popular</span>
+          <h3>Premium</h3>
+          <p class="desc">For readers who want every panel translated the moment they see it.</p>
+          <div class="price-amount"><span class="num">₹99</span><span class="per">/ month</span></div>
+          <ul class="price-features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Everything in Free</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Hinglish Translation</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Unlimited Translation</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Offline Cache</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Faster OCR</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Priority Support</li>
+          </ul>
+          <a href="#" class="btn btn-primary btn-block">Upgrade Monthly</a>
+          <p class="price-footer-note">UPI Only · Secure payments via Razorpay</p>
+        </div>
+
+        <div class="price-card is-featured reveal">
+          <span class="price-card-badge">Best Value</span>
+          <h3>Yearly</h3>
+          <p class="desc">The same Premium plan, billed once a year.</p>
+          <div class="price-amount"><span class="num">₹799</span><span class="per">/ year</span></div>
+          <p class="price-note">≈ ₹66/month <span class="save-tag">Save 33%</span></p>
+          <ul class="price-features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Everything in Monthly Premium</li>
+          </ul>
+          <a href="#" class="btn btn-primary btn-block">Upgrade Yearly</a>
+        </div>
+      </div>
+
+      <div class="upi-note reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        Premium payments are processed via UPI only, through Razorpay.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="eyebrow">FAQ</span>
+        <h2>Questions readers actually ask.</h2>
+      </div>
+      <div class="faq-list reveal">
+
+        <div class="faq-item is-open">
+          <button class="faq-q" aria-expanded="true">How does translation work?<span class="icon"></span></button>
+          <div class="faq-a"><p>You select a region of your screen — a speech bubble, a caption box, a full panel. The extension captures it, runs OCR to extract the text, detects the source language, and sends it through Gemini for translation. The result appears back over the original text in a floating overlay, usually in under a second.</p></div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">Do I need my own Gemini API key?<span class="icon"></span></button>
+          <div class="faq-a"><p>No. Translation runs through our own backend, so you never need to sign up for Google AI Studio or manage an API key yourself. Your Free or Premium plan already includes translation access.</p></div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">Can I cancel anytime?<span class="icon"></span></button>
+          <div class="faq-a"><p>Yes. Cancel from the extension's account settings whenever you like — your Premium access continues until the end of the period you already paid for, and you won't be billed again after that. See our <a href="terms.html#billing">Terms</a> for full billing details.</p></div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">Can I use it on multiple devices?<span class="icon"></span></button>
+          <div class="faq-a"><p>Yes. Premium is tied to your Google account, not a single browser install. Sign in with the same account on any Chrome, Edge, Brave, or Opera browser and your plan carries over.</p></div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">Does it work on every website?<span class="icon"></span></button>
+          <div class="faq-a"><p>Since capture is screen-based rather than tied to a site's HTML, it works anywhere text is visible in your browser — manhwa and manga reading sites, PDF viewers, and downloaded chapters opened locally.</p></div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">How does the 14-day trial work?<span class="icon"></span></button>
+          <div class="faq-a"><p>Every Premium subscription starts with a 14-day free trial with full access — Hinglish mode, unlimited translations, offline cache, and priority speed. You won't be charged until the trial ends, and you can cancel anytime before then from the extension's account settings at no cost.</p></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CTA BAND ============ -->
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <div class="cta-band reveal">
+        <span class="eyebrow"><span class="dot"></span>Ready when you are</span>
+        <h2>Your next chapter, already translated.</h2>
+        <p>Install Manhwa Translator AI, pick Hinglish, Hindi, or English, and stop losing the thread waiting on a translator group.</p>
+        <div class="hero-actions">
+          <a href="#" class="btn btn-primary btn-lg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 3"/></svg>
+            Add to Chrome — it's free
+          </a>
+          <a href="#pricing" class="btn btn-secondary btn-lg">Compare plans</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="/" class="brand"><span class="brand-logo" aria-hidden="true"></span>Manhwa Translator <span class="text-grad">AI</span></a>
+        <p>Instant OCR and AI translation for manhwa, manga, and webtoon readers — in Hindi, English, or Hinglish.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#screenshots">Screenshots</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="https://github.com" target="_blank" rel="noopener">GitHub</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="terms.html">Terms &amp; Conditions</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© <span id="year">2026</span> Manhwa Translator AI</p>
+      <div class="footer-social">
+        <a href="https://github.com" target="_blank" rel="noopener" aria-label="GitHub">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.8 5.4.8 11.7c0 5 3.2 9.3 7.7 10.8.6.1.8-.2.8-.6v-2.2c-3.1.7-3.8-1.3-3.8-1.3-.5-1.3-1.2-1.7-1.2-1.7-1-.7.1-.6.1-.6 1.1.1 1.7 1.1 1.7 1.1 1 1.7 2.6 1.2 3.3.9.1-.7.4-1.2.7-1.5-2.5-.3-5.1-1.2-5.1-5.5 0-1.2.4-2.2 1.1-3-.1-.3-.5-1.4.1-2.9 0 0 .9-.3 3 1.1a10.4 10.4 0 0 1 5.4 0c2.1-1.4 3-1.1 3-1.1.6 1.5.2 2.6.1 2.9.7.8 1.1 1.8 1.1 3 0 4.3-2.6 5.2-5.1 5.5.4.4.8 1.1.8 2.2v3.3c0 .4.2.7.8.6 4.5-1.5 7.7-5.8 7.7-10.8C23.2 5.4 18.3.5 12 .5Z"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
