@@ -15,7 +15,7 @@
   'use strict';
 
   /* =======================================================================
-     CONFIG — fill these in before this goes live.
+     CONFIG
      ======================================================================= */
   var CONFIG = {
     SUPABASE_URL: 'https://pjhumtkkqffxuopmxjkc.supabase.co',
@@ -29,7 +29,7 @@
 
   var REQUIRED_PARAMS = ['order_id', 'amount', 'currency', 'key_id'];
 
-  var card = document.getElementById('checkoutCard');
+  var card = null;
   var currentParams = null;
   var redirectTimer = null;
 
@@ -65,7 +65,7 @@
     var symbols = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
     var num = parseInt(amount, 10);
     if (isNaN(num)) return '';
-    var value = num / 100; // Razorpay amounts are in the smallest currency unit
+    var value = num / 100;
     var symbol = symbols[currency] || (currency ? currency + ' ' : '');
     var formatted = value.toLocaleString('en-IN', {
       minimumFractionDigits: value % 1 === 0 ? 0 : 2,
@@ -91,28 +91,33 @@
      Render states
      ======================================================================= */
   function renderPreparing() {
-    card.innerHTML =
-      '<div class="state state-loading">' +
-        '<div class="spinner" aria-hidden="true"></div>' +
-        '<h1>Preparing your checkout&hellip;</h1>' +
-        '<p>Setting up a secure payment session with Razorpay.</p>' +
-      '</div>';
+    if (!card) card = document.getElementById('checkoutCard');
+    if (!card) return;
+    card.innerHTML = `
+      <div class="state state-loading">
+        <div class="spinner" aria-hidden="true"></div>
+        <h1>Preparing your checkout&hellip;</h1>
+        <p>Setting up a secure payment session with Razorpay.</p>
+      </div>`;
   }
 
   function renderWaiting(params) {
-    card.innerHTML =
-      '<div class="state state-waiting">' +
-        '<div class="checkout-summary">' +
-          '<span class="checkout-summary-label">You\u2019re upgrading to</span>' +
-          '<span class="checkout-summary-plan">' + escapeHtml(planLabel(params.plan)) + '</span>' +
-          '<span class="checkout-summary-amount">' + escapeHtml(formatAmount(params.amount, params.currency)) + '</span>' +
-        '</div>' +
-        '<div class="spinner" aria-hidden="true"></div>' +
-        '<p>Complete the payment in the Razorpay window.</p>' +
-        '<div class="checkout-actions">' +
-          '<button type="button" class="btn btn-secondary btn-block" id="reopenBtn">Reopen payment window</button>' +
-        '</div>' +
-      '</div>';
+    if (!card) card = document.getElementById('checkoutCard');
+    if (!card) return;
+    card.innerHTML = `
+      <div class="state state-waiting">
+        <div class="checkout-summary">
+          <span class="checkout-summary-label">You’re upgrading to</span>
+          <span class="checkout-summary-plan">${escapeHtml(planLabel(params.plan))}</span>
+          <span class="checkout-summary-amount">${escapeHtml(formatAmount(params.amount, params.currency))}</span>
+        </div>
+        <div class="spinner" aria-hidden="true"></div>
+        <p>Complete the payment in the Razorpay window.</p>
+        <div class="checkout-actions">
+          <button type="button" class="btn btn-secondary btn-block" id="reopenBtn">Reopen payment window</button>
+        </div>
+      </div>`;
+
     var reopenBtn = document.getElementById('reopenBtn');
     if (reopenBtn) {
       reopenBtn.addEventListener('click', function () { openRazorpay(params); });
@@ -120,33 +125,37 @@
   }
 
   function renderVerifying() {
-    card.innerHTML =
-      '<div class="state state-loading">' +
-        '<div class="spinner" aria-hidden="true"></div>' +
-        '<h1>Verifying your payment&hellip;</h1>' +
-        '<p>Hang tight, this only takes a moment.</p>' +
-      '</div>';
+    if (!card) card = document.getElementById('checkoutCard');
+    if (!card) return;
+    card.innerHTML = `
+      <div class="state state-loading">
+        <div class="spinner" aria-hidden="true"></div>
+        <h1>Verifying your payment&hellip;</h1>
+        <p>Hang tight, this only takes a moment.</p>
+      </div>`;
   }
 
   function renderSuccess(params, extra) {
-    card.innerHTML =
-      '<div class="state state-success">' +
-        '<div class="success-check" aria-hidden="true">' +
-          '<svg viewBox="0 0 52 52">' +
-            '<circle class="success-check-circle" cx="26" cy="26" r="24"/>' +
-            '<path class="success-check-mark" d="M14 27l7 7 17-17"/>' +
-          '</svg>' +
-        '</div>' +
-        '<h1>You\u2019re Premium!</h1>' +
-        '<p class="checkout-summary-plan">' + escapeHtml(planLabel(params.plan)) + '</p>' +
-        '<p class="checkout-summary-amount">' + escapeHtml(formatAmount(params.amount, params.currency)) + ' paid</p>' +
-        '<p class="success-note">Hinglish mode, unlimited translations, and offline cache are unlocked on your account.</p>' +
-        '<div class="checkout-actions">' +
-          '<button type="button" class="btn btn-primary btn-block" id="continueBtn">Continue</button>' +
-        '</div>' +
-        '<p class="redirect-note">Returning to Manhwa Translator AI in <span id="countdown">' + CONFIG.REDIRECT_SECONDS + '</span>s&hellip; ' +
-          '<button type="button" id="cancelRedirectBtn">Stay here</button></p>' +
-      '</div>';
+    if (!card) card = document.getElementById('checkoutCard');
+    if (!card) return;
+    card.innerHTML = `
+      <div class="state state-success">
+        <div class="success-check" aria-hidden="true">
+          <svg viewBox="0 0 52 52">
+            <circle class="success-check-circle" cx="26" cy="26" r="24"/>
+            <path class="success-check-mark" d="M14 27l7 7 17-17"/>
+          </svg>
+        </div>
+        <h1>You’re Premium!</h1>
+        <p class="checkout-summary-plan">${escapeHtml(planLabel(params.plan))}</p>
+        <p class="checkout-summary-amount">${escapeHtml(formatAmount(params.amount, params.currency))} paid</p>
+        <p class="success-note">Hinglish mode, unlimited translations, and offline cache are unlocked on your account.</p>
+        <div class="checkout-actions">
+          <button type="button" class="btn btn-primary btn-block" id="continueBtn">Continue</button>
+        </div>
+        <p class="redirect-note">Returning to Manhwa Translator AI in <span id="countdown">${CONFIG.REDIRECT_SECONDS}</span>s&hellip; 
+          <button type="button" id="cancelRedirectBtn">Stay here</button></p>
+      </div>`;
 
     startRedirectCountdown();
     notifyExtension({
@@ -157,24 +166,26 @@
   }
 
   function renderFailed(reasonText) {
+    if (!card) card = document.getElementById('checkoutCard');
+    if (!card) return;
     var subject = 'Payment issue — Manhwa Translator AI';
     var body = 'Hi,\n\nMy payment did not go through.\n\n'
       + 'Order ID: ' + (currentParams ? currentParams.order_id : 'n/a') + '\n'
       + 'Plan: ' + (currentParams ? currentParams.plan : 'n/a') + '\n\n'
       + 'Details: ' + reasonText;
 
-    card.innerHTML =
-      '<div class="state state-error">' +
-        '<div class="error-icon" aria-hidden="true">' +
-          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>' +
-        '</div>' +
-        '<h1>Payment didn\u2019t go through</h1>' +
-        '<p>' + escapeHtml(reasonText) + '</p>' +
-        '<div class="checkout-actions">' +
-          '<button type="button" class="btn btn-primary btn-block" id="retryBtn">Try again</button>' +
-          '<a class="btn btn-secondary btn-block" href="' + gmailComposeUrl(subject, body) + '" target="_blank" rel="noopener">Contact support</a>' +
-        '</div>' +
-      '</div>';
+    card.innerHTML = `
+      <div class="state state-error">
+        <div class="error-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+        </div>
+        <h1>Payment didn’t go through</h1>
+        <p>${escapeHtml(reasonText)}</p>
+        <div class="checkout-actions">
+          <button type="button" class="btn btn-primary btn-block" id="retryBtn">Try again</button>
+          <a class="btn btn-secondary btn-block" href="${gmailComposeUrl(subject, body)}" target="_blank" rel="noopener">Contact support</a>
+        </div>
+      </div>`;
 
     var retryBtn = document.getElementById('retryBtn');
     if (retryBtn) {
@@ -183,18 +194,20 @@
   }
 
   function renderCancelled() {
-    card.innerHTML =
-      '<div class="state state-cancelled">' +
-        '<div class="cancel-icon" aria-hidden="true">' +
-          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M9 9l6 6M15 9l-6 6"/></svg>' +
-        '</div>' +
-        '<h1>Checkout cancelled</h1>' +
-        '<p>No payment was made. You can try again whenever you\u2019re ready.</p>' +
-        '<div class="checkout-actions">' +
-          '<button type="button" class="btn btn-primary btn-block" id="retryBtn2">Try again</button>' +
-          '<a class="btn btn-secondary btn-block" href="' + CONFIG.HOME_URL + '">Back to homepage</a>' +
-        '</div>' +
-      '</div>';
+    if (!card) card = document.getElementById('checkoutCard');
+    if (!card) return;
+    card.innerHTML = `
+      <div class="state state-cancelled">
+        <div class="cancel-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M9 9l6 6M15 9l-6 6"/></svg>
+        </div>
+        <h1>Checkout cancelled</h1>
+        <p>No payment was made. You can try again whenever you’re ready.</p>
+        <div class="checkout-actions">
+          <button type="button" class="btn btn-primary btn-block" id="retryBtn2">Try again</button>
+          <a class="btn btn-secondary btn-block" href="${CONFIG.HOME_URL}">Back to homepage</a>
+        </div>
+      </div>`;
 
     var retryBtn2 = document.getElementById('retryBtn2');
     if (retryBtn2) {
@@ -203,17 +216,19 @@
   }
 
   function renderError(title, message) {
-    card.innerHTML =
-      '<div class="state state-error">' +
-        '<div class="error-icon" aria-hidden="true">' +
-          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>' +
-        '</div>' +
-        '<h1>' + escapeHtml(title) + '</h1>' +
-        '<p>' + escapeHtml(message) + '</p>' +
-        '<div class="checkout-actions">' +
-          '<a class="btn btn-primary btn-block" href="' + CONFIG.HOME_URL + '">Back to homepage</a>' +
-        '</div>' +
-      '</div>';
+    if (!card) card = document.getElementById('checkoutCard');
+    if (!card) return;
+    card.innerHTML = `
+      <div class="state state-error">
+        <div class="error-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>
+        </div>
+        <h1>${escapeHtml(title)}</h1>
+        <p>${escapeHtml(message)}</p>
+        <div class="checkout-actions">
+          <a class="btn btn-primary btn-block" href="${CONFIG.HOME_URL}">Back to homepage</a>
+        </div>
+      </div>`;
   }
 
   function startRedirectCountdown() {
@@ -247,31 +262,23 @@
   }
 
   /* =======================================================================
-     Notify the extension (best-effort — several strategies, since a plain
-     web page can't reliably know how the extension is listening).
+     Notify Extension
      ======================================================================= */
   function notifyExtension(payload) {
     var message = Object.assign({ source: 'manhwa-translator-checkout', type: 'payment_success' }, payload);
 
-    // Strategy 1: postMessage to the window that opened this tab, if any
-    // (works if the extension opened this page via window.open()).
     try {
       if (window.opener && !window.opener.closed) {
         window.opener.postMessage(message, '*');
       }
     } catch (e) { /* ignore */ }
 
-    // Strategy 2: direct extension messaging, only if EXTENSION_ID is set
-    // and this origin is allowlisted in the extension's manifest under
-    // "externally_connectable".
     try {
       if (CONFIG.EXTENSION_ID && window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
         chrome.runtime.sendMessage(CONFIG.EXTENSION_ID, message);
       }
-    } catch (e) { /* ignore — extension APIs aren't available on regular pages by default */ }
+    } catch (e) { /* ignore */ }
 
-    // Strategy 3: BroadcastChannel, in case the extension listens on a
-    // shared channel from a background page or another open tab.
     try {
       if ('BroadcastChannel' in window) {
         var bc = new BroadcastChannel('manhwa-translator-payments');
@@ -335,9 +342,7 @@
   }
 
   /* =======================================================================
-     Verification — the payment is only ever treated as successful once the
-     backend confirms the Razorpay signature. The client-side handler firing
-     is not, by itself, proof of payment.
+     Verification
      ======================================================================= */
   function verifyPayment(params, rzpResponse) {
     renderVerifying();
@@ -378,7 +383,7 @@
         renderSuccess(params, { payment_id: rzpResponse.razorpay_payment_id });
       })
       .catch(function () {
-        renderFailed('We could not confirm this payment with our server. If money was deducted, it will be refunded automatically within a few days — contact support if you don\u2019t see it reversed.');
+        renderFailed('We could not confirm this payment with our server. If money was deducted, it will be refunded automatically within a few days — contact support if you don’t see it reversed.');
       });
   }
 
@@ -386,6 +391,7 @@
      Init
      ======================================================================= */
   function init() {
+    card = document.getElementById('checkoutCard');
     var params = getParams();
     var missing = REQUIRED_PARAMS.filter(function (key) { return !params[key]; });
 
@@ -407,5 +413,9 @@
       });
   }
 
-  document.addEventListener('DOMContentLoaded', init);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
