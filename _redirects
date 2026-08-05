@@ -1,0 +1,6 @@
+# Cloudflare Pages redirects/rewrites file.
+# Cloudflare Pages already serves checkout.html at both /checkout.html and
+# /checkout automatically (its default "clean URL" behavior for .html
+# files), but this rule makes that explicit and guarantees it regardless of
+# project-level settings.
+/checkout   /checkout.html   200

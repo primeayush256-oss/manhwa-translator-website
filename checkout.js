@@ -1,0 +1,427 @@
+/* =========================================================================
+   Manhwa Translator AI — Checkout page logic
+   Vanilla JS, no build step. Flow:
+     1. Read order_id / amount / currency / key_id / plan / token from the URL
+        (the extension builds this URL after creating a Razorpay order).
+     2. Load Razorpay's Checkout.js and open the payment modal automatically.
+     3. On success, POST the payment response to a Supabase Edge Function
+        ("verify-payment") that checks the Razorpay signature server-side
+        and activates the subscription. The client NEVER decides payment
+        success on its own — only the verified server response does.
+     4. Show a success screen, best-effort notify the extension, and
+        redirect back to the site.
+   ========================================================================= */
+(function () {
+  'use strict';
+
+  /* =======================================================================
+     CONFIG — fill these in before this goes live.
+     ======================================================================= */
+  var CONFIG = {
+    // Your Supabase project URL, e.g. "https://abcdefghijk.supabase.co"
+    SUPABASE_URL: 'https://YOUR-PROJECT-REF.supabase.co',
+
+    // Your Supabase anon/public key (safe for client-side use — this is the
+    // publishable key, not the service_role secret).
+    SUPABASE_ANON_KEY: 'YOUR_SUPABASE_ANON_KEY',
+
+    // Path of your verify-payment Edge Function, appended to SUPABASE_URL.
+    VERIFY_PAYMENT_PATH: '/functions/v1/verify-payment',
+
+    // Optional: your Chrome extension's ID, only needed if you want this
+    // page to call chrome.runtime.sendMessage(EXTENSION_ID, ...) directly.
+    // Requires the extension to allowlist this site under
+    // "externally_connectable" in its manifest. Leave blank to skip.
+    EXTENSION_ID: '',
+
+    // Where "Continue" / the auto-redirect on the success screen sends the
+    // user.
+    HOME_URL: 'index.html',
+
+    // Seconds before the success screen auto-redirects to HOME_URL.
+    REDIRECT_SECONDS: 6,
+
+    SUPPORT_EMAIL: 'primeayush256@gmail.com'
+  };
+
+  var REQUIRED_PARAMS = ['order_id', 'amount', 'currency', 'key_id'];
+
+  var card = document.getElementById('checkoutCard');
+  var currentParams = null;
+  var redirectTimer = null;
+
+  /* =======================================================================
+     Helpers
+     ======================================================================= */
+  function getParams() {
+    var qs = new URLSearchParams(window.location.search);
+    return {
+      order_id: qs.get('order_id') || '',
+      amount: qs.get('amount') || '',
+      currency: (qs.get('currency') || 'INR').toUpperCase(),
+      key_id: qs.get('key_id') || '',
+      plan: qs.get('plan') || '',
+      token: qs.get('token') || ''
+    };
+  }
+
+  function planLabel(plan) {
+    var map = {
+      monthly: 'Premium — Monthly',
+      premium_monthly: 'Premium — Monthly',
+      yearly: 'Premium — Yearly',
+      premium_yearly: 'Premium — Yearly',
+      premium: 'Premium'
+    };
+    if (!plan) return 'Manhwa Translator Premium';
+    var key = String(plan).toLowerCase().replace(/[\s-]+/g, '_');
+    return map[key] || ('Manhwa Translator — ' + plan);
+  }
+
+  function formatAmount(amount, currency) {
+    var symbols = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
+    var num = parseInt(amount, 10);
+    if (isNaN(num)) return '';
+    var value = num / 100; // Razorpay amounts are in the smallest currency unit
+    var symbol = symbols[currency] || (currency ? currency + ' ' : '');
+    var formatted = value.toLocaleString('en-IN', {
+      minimumFractionDigits: value % 1 === 0 ? 0 : 2,
+      maximumFractionDigits: 2
+    });
+    return symbol + formatted;
+  }
+
+  function gmailComposeUrl(subject, body) {
+    return 'https://mail.google.com/mail/?view=cm&fs=1'
+      + '&to=' + encodeURIComponent(CONFIG.SUPPORT_EMAIL)
+      + '&su=' + encodeURIComponent(subject)
+      + '&body=' + encodeURIComponent(body);
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  /* =======================================================================
+     Render states
+     ======================================================================= */
+  function renderPreparing() {
+    card.innerHTML =
+      '<div class="state state-loading">' +
+        '<div class="spinner" aria-hidden="true"></div>' +
+        '<h1>Preparing your checkout&hellip;</h1>' +
+        '<p>Setting up a secure payment session with Razorpay.</p>' +
+      '</div>';
+  }
+
+  function renderWaiting(params) {
+    card.innerHTML =
+      '<div class="state state-waiting">' +
+        '<div class="checkout-summary">' +
+          '<span class="checkout-summary-label">You\u2019re upgrading to</span>' +
+          '<span class="checkout-summary-plan">' + escapeHtml(planLabel(params.plan)) + '</span>' +
+          '<span class="checkout-summary-amount">' + escapeHtml(formatAmount(params.amount, params.currency)) + '</span>' +
+        '</div>' +
+        '<div class="spinner" aria-hidden="true"></div>' +
+        '<p>Complete the payment in the Razorpay window.</p>' +
+        '<div class="checkout-actions">' +
+          '<button type="button" class="btn btn-secondary btn-block" id="reopenBtn">Reopen payment window</button>' +
+        '</div>' +
+      '</div>';
+    var reopenBtn = document.getElementById('reopenBtn');
+    if (reopenBtn) {
+      reopenBtn.addEventListener('click', function () { openRazorpay(params); });
+    }
+  }
+
+  function renderVerifying() {
+    card.innerHTML =
+      '<div class="state state-loading">' +
+        '<div class="spinner" aria-hidden="true"></div>' +
+        '<h1>Verifying your payment&hellip;</h1>' +
+        '<p>Hang tight, this only takes a moment.</p>' +
+      '</div>';
+  }
+
+  function renderSuccess(params, extra) {
+    card.innerHTML =
+      '<div class="state state-success">' +
+        '<div class="success-check" aria-hidden="true">' +
+          '<svg viewBox="0 0 52 52">' +
+            '<circle class="success-check-circle" cx="26" cy="26" r="24"/>' +
+            '<path class="success-check-mark" d="M14 27l7 7 17-17"/>' +
+          '</svg>' +
+        '</div>' +
+        '<h1>You\u2019re Premium!</h1>' +
+        '<p class="checkout-summary-plan">' + escapeHtml(planLabel(params.plan)) + '</p>' +
+        '<p class="checkout-summary-amount">' + escapeHtml(formatAmount(params.amount, params.currency)) + ' paid</p>' +
+        '<p class="success-note">Hinglish mode, unlimited translations, and offline cache are unlocked on your account.</p>' +
+        '<div class="checkout-actions">' +
+          '<button type="button" class="btn btn-primary btn-block" id="continueBtn">Continue</button>' +
+        '</div>' +
+        '<p class="redirect-note">Returning to Manhwa Translator AI in <span id="countdown">' + CONFIG.REDIRECT_SECONDS + '</span>s&hellip; ' +
+          '<button type="button" id="cancelRedirectBtn">Stay here</button></p>' +
+      '</div>';
+
+    startRedirectCountdown();
+    notifyExtension({
+      plan: params.plan,
+      order_id: params.order_id,
+      payment_id: extra && extra.payment_id
+    });
+  }
+
+  function renderFailed(reasonText) {
+    var subject = 'Payment issue — Manhwa Translator AI';
+    var body = 'Hi,\n\nMy payment did not go through.\n\n'
+      + 'Order ID: ' + (currentParams ? currentParams.order_id : 'n/a') + '\n'
+      + 'Plan: ' + (currentParams ? currentParams.plan : 'n/a') + '\n\n'
+      + 'Details: ' + reasonText;
+
+    card.innerHTML =
+      '<div class="state state-error">' +
+        '<div class="error-icon" aria-hidden="true">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>' +
+        '</div>' +
+        '<h1>Payment didn\u2019t go through</h1>' +
+        '<p>' + escapeHtml(reasonText) + '</p>' +
+        '<div class="checkout-actions">' +
+          '<button type="button" class="btn btn-primary btn-block" id="retryBtn">Try again</button>' +
+          '<a class="btn btn-secondary btn-block" href="' + gmailComposeUrl(subject, body) + '" target="_blank" rel="noopener">Contact support</a>' +
+        '</div>' +
+      '</div>';
+
+    var retryBtn = document.getElementById('retryBtn');
+    if (retryBtn) {
+      retryBtn.addEventListener('click', function () { openRazorpay(currentParams); });
+    }
+  }
+
+  function renderCancelled() {
+    card.innerHTML =
+      '<div class="state state-cancelled">' +
+        '<div class="cancel-icon" aria-hidden="true">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M9 9l6 6M15 9l-6 6"/></svg>' +
+        '</div>' +
+        '<h1>Checkout cancelled</h1>' +
+        '<p>No payment was made. You can try again whenever you\u2019re ready.</p>' +
+        '<div class="checkout-actions">' +
+          '<button type="button" class="btn btn-primary btn-block" id="retryBtn2">Try again</button>' +
+          '<a class="btn btn-secondary btn-block" href="' + CONFIG.HOME_URL + '">Back to homepage</a>' +
+        '</div>' +
+      '</div>';
+
+    var retryBtn2 = document.getElementById('retryBtn2');
+    if (retryBtn2) {
+      retryBtn2.addEventListener('click', function () { openRazorpay(currentParams); });
+    }
+  }
+
+  function renderError(title, message) {
+    card.innerHTML =
+      '<div class="state state-error">' +
+        '<div class="error-icon" aria-hidden="true">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>' +
+        '</div>' +
+        '<h1>' + escapeHtml(title) + '</h1>' +
+        '<p>' + escapeHtml(message) + '</p>' +
+        '<div class="checkout-actions">' +
+          '<a class="btn btn-primary btn-block" href="' + CONFIG.HOME_URL + '">Back to homepage</a>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function startRedirectCountdown() {
+    var seconds = CONFIG.REDIRECT_SECONDS;
+    var countdownEl = document.getElementById('countdown');
+    clearInterval(redirectTimer);
+    redirectTimer = setInterval(function () {
+      seconds -= 1;
+      if (countdownEl) countdownEl.textContent = seconds;
+      if (seconds <= 0) {
+        clearInterval(redirectTimer);
+        window.location.href = CONFIG.HOME_URL;
+      }
+    }, 1000);
+
+    var continueBtn = document.getElementById('continueBtn');
+    if (continueBtn) {
+      continueBtn.addEventListener('click', function () {
+        clearInterval(redirectTimer);
+        window.location.href = CONFIG.HOME_URL;
+      });
+    }
+    var cancelBtn = document.getElementById('cancelRedirectBtn');
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', function () {
+        clearInterval(redirectTimer);
+        var note = document.querySelector('.redirect-note');
+        if (note) note.textContent = 'Staying on this page.';
+      });
+    }
+  }
+
+  /* =======================================================================
+     Notify the extension (best-effort — several strategies, since a plain
+     web page can't reliably know how the extension is listening).
+     ======================================================================= */
+  function notifyExtension(payload) {
+    var message = Object.assign({ source: 'manhwa-translator-checkout', type: 'payment_success' }, payload);
+
+    // Strategy 1: postMessage to the window that opened this tab, if any
+    // (works if the extension opened this page via window.open()).
+    try {
+      if (window.opener && !window.opener.closed) {
+        window.opener.postMessage(message, '*');
+      }
+    } catch (e) { /* ignore */ }
+
+    // Strategy 2: direct extension messaging, only if EXTENSION_ID is set
+    // and this origin is allowlisted in the extension's manifest under
+    // "externally_connectable".
+    try {
+      if (CONFIG.EXTENSION_ID && window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage(CONFIG.EXTENSION_ID, message);
+      }
+    } catch (e) { /* ignore — extension APIs aren't available on regular pages by default */ }
+
+    // Strategy 3: BroadcastChannel, in case the extension listens on a
+    // shared channel from a background page or another open tab.
+    try {
+      if ('BroadcastChannel' in window) {
+        var bc = new BroadcastChannel('manhwa-translator-payments');
+        bc.postMessage(message);
+        bc.close();
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  /* =======================================================================
+     Razorpay
+     ======================================================================= */
+  function loadRazorpayScript() {
+    return new Promise(function (resolve, reject) {
+      if (window.Razorpay) { resolve(); return; }
+      var script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = function () { resolve(); };
+      script.onerror = function () { reject(new Error('script_load_failed')); };
+      document.head.appendChild(script);
+    });
+  }
+
+  function openRazorpay(params) {
+    renderWaiting(params);
+
+    var options = {
+      key: params.key_id,
+      amount: params.amount,
+      currency: params.currency,
+      order_id: params.order_id,
+      name: 'Manhwa Translator AI',
+      description: planLabel(params.plan),
+      image: window.location.origin + '/assets/images/favicon-192.png',
+      handler: function (response) {
+        verifyPayment(params, response);
+      },
+      modal: {
+        ondismiss: function () {
+          renderCancelled();
+        }
+      },
+      theme: { color: '#7c5cff' }
+    };
+
+    var rzp;
+    try {
+      rzp = new window.Razorpay(options);
+    } catch (e) {
+      renderError('Could not start checkout', 'Razorpay did not initialize correctly. Please go back and try again.');
+      return;
+    }
+
+    rzp.on('payment.failed', function (response) {
+      var reason = (response && response.error && response.error.description)
+        || 'Your bank or Razorpay declined this payment.';
+      renderFailed(reason);
+    });
+
+    rzp.open();
+  }
+
+  /* =======================================================================
+     Verification — the payment is only ever treated as successful once the
+     backend confirms the Razorpay signature. The client-side handler firing
+     is not, by itself, proof of payment.
+     ======================================================================= */
+  function verifyPayment(params, rzpResponse) {
+    renderVerifying();
+
+    var endpoint = CONFIG.SUPABASE_URL.replace(/\/$/, '') + CONFIG.VERIFY_PAYMENT_PATH;
+    var headers = {
+      'Content-Type': 'application/json',
+      'apikey': CONFIG.SUPABASE_ANON_KEY
+    };
+    if (params.token) {
+      headers['Authorization'] = 'Bearer ' + params.token;
+    } else {
+      headers['Authorization'] = 'Bearer ' + CONFIG.SUPABASE_ANON_KEY;
+    }
+
+    fetch(endpoint, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({
+        razorpay_payment_id: rzpResponse.razorpay_payment_id,
+        razorpay_order_id: rzpResponse.razorpay_order_id,
+        razorpay_signature: rzpResponse.razorpay_signature,
+        plan: params.plan,
+        order_id: params.order_id,
+        token: params.token
+      })
+    })
+      .then(function (res) {
+        if (!res.ok) { throw new Error('http_' + res.status); }
+        return res.json().catch(function () { return {}; });
+      })
+      .then(function (data) {
+        if (data && data.verified === false) {
+          renderFailed(data.message || 'We could not verify this payment. If money was deducted, it will be refunded automatically, or contact support.');
+          return;
+        }
+        renderSuccess(params, { payment_id: rzpResponse.razorpay_payment_id });
+      })
+      .catch(function () {
+        renderFailed('We could not confirm this payment with our server. If money was deducted, it will be refunded automatically within a few days — contact support if you don\u2019t see it reversed.');
+      });
+  }
+
+  /* =======================================================================
+     Init
+     ======================================================================= */
+  function init() {
+    var params = getParams();
+    var missing = REQUIRED_PARAMS.filter(function (key) { return !params[key]; });
+
+    if (missing.length) {
+      renderError(
+        'Invalid checkout link',
+        'This checkout link is missing required information (' + missing.join(', ') + '). Please go back to the extension and try upgrading again.'
+      );
+      return;
+    }
+
+    currentParams = params;
+    renderPreparing();
+
+    loadRazorpayScript()
+      .then(function () { openRazorpay(params); })
+      .catch(function () {
+        renderError('Could not load payment window', 'We could not reach Razorpay. Check your connection and try again.');
+      });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
